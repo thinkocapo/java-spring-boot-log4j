@@ -23,6 +23,11 @@ import java.util.List;
 import java.util.Map;
 
 
+import io.sentry.DefaultSentryClientFactory;
+import io.sentry.dsn.Dsn;
+import io.sentry.SentryClient;
+
+
 @Controller
 @CrossOrigin
 @EnableAutoConfiguration
@@ -59,7 +64,7 @@ public class Application {
 
             String userEmail = order.getEmail();
             logger.info("Processing order for: " + userEmail);
-            
+
             // Set the user in the current context.
             Sentry.getContext().setUser(
                 new UserBuilder().setEmail(userEmail).build()
@@ -141,6 +146,14 @@ public class Application {
     }
     
     private static void initSentry() {
+        Dsn dsn = new Dsn("https://26eb66bd0a85474698fe5691cd7f21e0@sentry.io/1399858");
+
+        SentryClientCustomFactory sccf = new SentryClientCustomFactory();
+
+        SentryClient sentryClient = sccf.createSentryClient(dsn);
+        Sentry.setStoredClient(sentryClient);
+
+
     	Sentry.init();
         
     	Sentry.getStoredClient().setServerName("fe1");
