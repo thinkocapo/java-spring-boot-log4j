@@ -7,8 +7,14 @@ import io.sentry.event.BreadcrumbBuilder;
 import io.sentry.event.Event;
 import io.sentry.event.UserBuilder;
 import io.sentry.event.helper.ShouldSendEventCallback;
+import io.sentry.event.interfaces.SentryInterface;
+import io.sentry.event.interfaces.ExceptionInterface;
 
 import org.apache.logging.log4j.ThreadContext;
+import org.slf4j.MDC;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MarkerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,10 +23,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 @Controller
@@ -29,7 +39,7 @@ import java.util.Map;
 @SpringBootApplication
 public class Application {
 
-    private static final Logger logger = LogManager.getLogger("example.Application");
+    private static final Logger logger = LoggerFactory.getLogger("example.Application");
 
     private static Map<String, Integer> inventory = new HashMap<>();
 
@@ -94,7 +104,8 @@ public class Application {
 
         logger.debug("Debug message");
         logger.info("Info message");
-        logger.warn("Warn message"); // warning message that will be sent to Sentry
+        logger.warn("Warn message {}", 11); // warning message that will be sent to Sentry
+
         return "Success";
     }
 
@@ -102,6 +113,9 @@ public class Application {
     @ResponseBody
     String handledError() {
         String someLocalVariable = "stack locals";
+
+        // MDC extras (added to Sentry event as ADDITIONAL DATA)
+        //ThreadContext.put("customKey1", "customValue2");
         
         try {
             int example = 1 / 0;
@@ -128,8 +142,39 @@ public class Application {
     @ResponseBody
     String unhandledError() {
     	 String someLocalVariable = "stack locals";
+        ThreadContext.put("customKey1", "value1");
     	 
         throw new RuntimeException("Unhandled exception!");
+    }
+
+
+    @RequestMapping("/errorgenerator")
+    @ResponseBody
+    String errorGenerator() {
+
+        // create an array of Strings
+        String array[] = new String[] {
+                "syncObjectType=USER", "syncObjectType=ALL"};
+
+        int randomNum = ThreadLocalRandom.current().nextInt(1000, 8000 + 1);
+
+        long number = Math.round( Math.random() ) ;
+
+
+
+
+        try {
+            int example = 1 / 0;
+        } catch (Exception e) {
+            logger.error("Failed to complete Salesforce sync; companyId=" +
+                    number + "," + array[(int) number], e);
+        }
+        return "Success";
+
+
+
+
+
     }
 
     public static void main(String[] args) {
@@ -142,8 +187,41 @@ public class Application {
     
     private static void initSentry() {
     	Sentry.init();
+
+
         
     	Sentry.getStoredClient().setServerName("fe1");
+
+        Sentry.getStoredClient().addShouldSendEventCallback(new ShouldSendEventCallback() {
+
+
+            @Override
+            public boolean shouldSend(Event event) {
+
+                System.out.print("EVENT " + event);
+
+                System.out.print("EVENT " + event.getLevel());
+
+                System.out.print("EVENT " + event.getMessage());
+
+                if (event.getMessage().contains("foo")) {
+                    List<String> listA = new ArrayList<>();
+
+                    listA.add("SecurityError");
+                    //Fingerprint can be set on
+                    event.setFingerprint(listA);
+                    return false;
+                }
+                List<String> listA = new ArrayList<>();
+
+                listA.add("SecurityError");
+                //Fingerprint can be set on
+                event.setFingerprint(listA);
+
+                return true;
+
+            }
+        });
     	
     	//Added as tags to Sentry event
         Sentry.getStoredClient().addTag("dynamicTag1", "1.0");
