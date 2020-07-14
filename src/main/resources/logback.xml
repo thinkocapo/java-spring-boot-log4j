@@ -28,7 +28,7 @@
         <root level="INFO">
             <appender-ref ref="Console" />
             <!-- Note that the Sentry logging threshold is overridden to the WARN level -->
-            <appender-ref ref="Sentry" level="WARN" />
+            <appender-ref ref="Sentry" level="INFO" />
             <!-- above can become super noisy but I guarantee you it will become super noisy if we change it to INFO -->
 
         </root>
