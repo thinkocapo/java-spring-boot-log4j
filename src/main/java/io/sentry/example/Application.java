@@ -39,7 +39,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @SpringBootApplication
 public class Application {
 
-    private static final Logger logger = LoggerFactory.getLogger("example.Application");
+    private static final Logger logger = LoggerFactory.getLogger("io.sentry.example.Application");
 
     private static Map<String, Integer> inventory = new HashMap<>();
 
@@ -118,9 +118,9 @@ public class Application {
         //ThreadContext.put("customKey1", "customValue2");
         
         try {
-            logger.info("this is from INFO");
-            logger.error("this is from ERROR");
-            // int example = 1 / 0;
+            logger.info("HELLO this is from INFO");
+            // logger.error("this is from ERROR");
+            int example = 1 / 0;
         } catch (Exception e) {
             // caught exception that will be sent to Sentry
             logger.error("Caught exception!", e);
