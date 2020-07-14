@@ -10,7 +10,7 @@ import io.sentry.event.helper.ShouldSendEventCallback;
 import io.sentry.event.interfaces.SentryInterface;
 import io.sentry.event.interfaces.ExceptionInterface;
 
-import org.apache.logging.log4j.ThreadContext;
+// import org.apache.logging.log4j.ThreadContext;
 import org.slf4j.MDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.apache.logging.log4j.LogManager;
+// import org.apache.logging.log4j.LogManager;
 
 
 import java.util.ArrayList;
@@ -64,8 +64,8 @@ public class Application {
                                        @RequestBody Order order) {
         try {
             // set session and transaction id as tags
-            ThreadContext.put("session_id", sessionId);
-            ThreadContext.put("transaction_id", transactionId);
+            // ThreadContext.put("session_id", sessionId);
+            // ThreadContext.put("transaction_id", transactionId);
 
             String userEmail = order.getEmail();
             logger.info("Processing order for: " + userEmail);
@@ -97,10 +97,10 @@ public class Application {
     @ResponseBody
     String captureMessage() {
     	// MDC extras (added to Sentry event as ADDITIONAL DATA) 
-        ThreadContext.put("extra_key", "extra_value");
+        // ThreadContext.put("extra_key", "extra_value");
    
         // NDC extras are sent under 'log4j2-NDC'
-        ThreadContext.push("Extra_details");
+        // ThreadContext.push("Extra_details");
 
         logger.debug("Debug message");
         logger.info("Info message");
@@ -118,7 +118,9 @@ public class Application {
         //ThreadContext.put("customKey1", "customValue2");
         
         try {
-            int example = 1 / 0;
+            logger.info("this is from INFO");
+            logger.error("this is from ERROR");
+            // int example = 1 / 0;
         } catch (Exception e) {
             // caught exception that will be sent to Sentry
             logger.error("Caught exception!", e);
@@ -142,7 +144,7 @@ public class Application {
     @ResponseBody
     String unhandledError() {
     	 String someLocalVariable = "stack locals";
-        ThreadContext.put("customKey1", "value1");
+        // ThreadContext.put("customKey1", "value1");
     	 
         throw new RuntimeException("Unhandled exception!");
     }
